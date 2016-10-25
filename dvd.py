@@ -5,7 +5,7 @@ from pygame.locals import *
 import time
 from physics import physicsEngine
 from random import randint
-import multiprocessing
+# import multiprocessing
 
 def unitValue(x):
     if x>0:return 1
@@ -29,15 +29,16 @@ class dvd():
         self.ncolour = [0,0,233]
         self.colour = [0,0,233]
 
-        self.parent_conn, self.child_conn = multiprocessing.Pipe()
+        # self.parent_conn, self.child_conn = multiprocessing.Pipe()
 
         self.ph = physicsEngine(self)
         self.ph.daemon = True
 
 
     def main(self):
-        self.ph.start()
+        # self.ph.start()
         while self.running:
+            self.ph.run()
             t1 = time.time()
             for event in pygame.event.get():
                 if event.type == QUIT:
@@ -48,11 +49,12 @@ class dvd():
                     self.background = pygame.Surface(self.screen.get_size()).convert()
                 elif (event.type == pygame.KEYDOWN) and (event.key == pygame.K_ESCAPE):
                     self.running = False
-            objects = self.parent_conn.recv()
-            self.parent_conn.send(self.screen.get_size())
+            objects = [] #self.parent_conn.recv()
+            objects = self.ph.getObjects()
+            # self.parent_conn.send(self.screen.get_size())
             self.render(objects)
             self.clock.tick(self.fps)
-            print ("Render FPS:",1.0/(max(time.time()-t1,0.00001)))
+            # print ("Render FPS:",1.0/(max(time.time()-t1,0.00001)))
 
     def render(self,objects):
         if self.colour == self.ncolour:self.ncolour = [randint(0,100),randint(0,200),randint(0,255)]
