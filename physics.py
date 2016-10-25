@@ -1,4 +1,4 @@
-import multiprocessing
+import threading
 import pygame
 from random import randint,randrange
 from math import *
@@ -13,7 +13,7 @@ def ins_sort(k,key = lambda x:x):
             j=j-1
     return k
 
-class physicsEngine(multiprocessing.Process):
+class physicsEngine(threading.Thread):
     def __init__(self,dvd):
         super(physicsEngine,self).__init__()
         self.dvd = dvd
@@ -52,8 +52,8 @@ class physicsEngine(multiprocessing.Process):
                         if u.distsq(v)<lw**2:close.append(v)
                     u.close=close
 
-            self.dvd.child_conn.send(self.getObjects())
-            self.w,self.h = self.dvd.child_conn.recv()
+            #self.dvd.child_conn.send(self.getObjects())
+            #self.w,self.h = self.dvd.child_conn.recv()
 
 
             st = time.time()-st
