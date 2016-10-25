@@ -57,7 +57,7 @@ class physicsEngine(multiprocessing.Process):
 
 			st = time.time()-st
 			time.sleep(max(0,1./self.dvd.fps-st))
-			print ("Physics FPS: "+str(1./st))
+			print ("Physics FPS: "+str(1./max(0.00001,st)))
 		
 
 	def getObjects(self):

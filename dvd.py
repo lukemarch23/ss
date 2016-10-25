@@ -52,7 +52,7 @@ class dvd():
 			self.parent_conn.send(self.screen.get_size())
 			self.render(objects)
 			self.clock.tick(self.fps)
-			print ("Render FPS:",1.0/(time.time()-t1))
+			print ("Render FPS:",1.0/(max(time.time()-t1,0.00001)))
 
 	def render(self,objects):	
 		if self.colour == self.ncolour:self.ncolour = [randint(0,100),randint(0,200),randint(0,255)]
