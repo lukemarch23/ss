@@ -16,6 +16,8 @@ class dvd():
     def __init__(self):
         self.fps = 40.0
         self.particleCount = 150
+        self.drawLines = True
+        self.drawLineDistance = 150
         self.text="23"
         self.running = True
 

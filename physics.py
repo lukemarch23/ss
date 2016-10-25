@@ -41,15 +41,16 @@ class physicsEngine(multiprocessing.Process):
                     #narrow range
                     if  u.collide(v):
                         u.bounce(v)
-            lw = 200
-            for ui in range(0,len(self.us)):
-                u = self.us[ui]
-                close = []
-                for vi in range(ui+1,len(self.us)):
-                    v = self.us[vi]
-                    if v.x-u.x>lw:break
-                    if u.distsq(v)<lw**2:close.append(v)
-                u.close=close
+            if self.dvd.drawLines:
+                lw = self.dvd.drawLineDistance
+                for ui in range(0,len(self.us)):
+                    u = self.us[ui]
+                    close = []
+                    for vi in range(ui+1,len(self.us)):
+                        v = self.us[vi]
+                        if v.x-u.x>lw:break
+                        if u.distsq(v)<lw**2:close.append(v)
+                    u.close=close
 
             self.dvd.child_conn.send(self.getObjects())
             self.w,self.h = self.dvd.child_conn.recv()
