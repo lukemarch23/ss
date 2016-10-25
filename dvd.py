@@ -50,8 +50,7 @@ class dvd():
 			print ("Render FPS:",1.0/(time.time()-t1))
 
 	def render(self,objects):	
-		if self.colour == self.ncolour:
-			self.ncolour = [randint(0,100),randint(0,200),randint(0,255)]
+		if self.colour == self.ncolour:self.ncolour = [randint(0,100),randint(0,200),randint(0,255)]
 		if self.ncolour[0]!=self.colour[0]:self.colour[0] += (self.ncolour[0]-self.colour[0])/abs(self.ncolour[0]-self.colour[0])
 		if self.ncolour[1]!=self.colour[1]:self.colour[1] += (self.ncolour[1]-self.colour[1])/abs(self.ncolour[1]-self.colour[1])
 		if self.ncolour[2]!=self.colour[2]:self.colour[2] += (self.ncolour[2]-self.colour[2])/abs(self.ncolour[2]-self.colour[2])
@@ -61,7 +60,7 @@ class dvd():
 			x,y,r,c = u
 			for v in c:
 				pygame.draw.line(self.background,self.colour,(x,y),v)
-		
+
 		for u in objects:
 			x,y,r,c = u
 			pygame.draw.circle(self.background,(0,0,233),(int(x),int(y)),int(r))

@@ -120,7 +120,7 @@ class particle():
 		self.dy -= chy
 		other.dx += chx
 		other.dy += chy
-	def _str__(self):
+	def __str__(self):
 		return self.x+","+self.y
 	def dist(self,o):
 		return sqrt((self.x-o.x)**2+(self.y-o.y)**2)
