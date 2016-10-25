@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import pygame
 from pygame.locals import *
@@ -6,6 +6,11 @@ import time
 from physics import physicsEngine
 from random import randint
 import multiprocessing
+
+def unitValue(x):
+	if x>0:return 1
+	elif x<0:return -1
+	return 0
 
 class dvd():
 	def __init__(self):
@@ -51,21 +56,20 @@ class dvd():
 
 	def render(self,objects):	
 		if self.colour == self.ncolour:self.ncolour = [randint(0,100),randint(0,200),randint(0,255)]
-		if self.ncolour[0]!=self.colour[0]:self.colour[0] += (self.ncolour[0]-self.colour[0])/abs(self.ncolour[0]-self.colour[0])
-		if self.ncolour[1]!=self.colour[1]:self.colour[1] += (self.ncolour[1]-self.colour[1])/abs(self.ncolour[1]-self.colour[1])
-		if self.ncolour[2]!=self.colour[2]:self.colour[2] += (self.ncolour[2]-self.colour[2])/abs(self.ncolour[2]-self.colour[2])
+		self.colour[0]+=unitValue(self.ncolour[0]-self.colour[0])
+		self.colour[1]+=unitValue(self.ncolour[1]-self.colour[1])
+		self.colour[2]+=unitValue(self.ncolour[2]-self.colour[2])
 
 		self.background.fill((0, 0, 0))
+		#draw connecting lines
 		for u in objects:
 			x,y,r,c = u
 			for v in c:
 				pygame.draw.line(self.background,self.colour,(x,y),v)
-
+		#draw objects infront of lines
 		for u in objects:
 			x,y,r,c = u
 			pygame.draw.circle(self.background,(0,0,233),(int(x),int(y)),int(r))
-
-		
 		
 		self.screen.blit(self.background, (0, 0))
 		pygame.display.flip()
