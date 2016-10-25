@@ -47,6 +47,8 @@ class dvd():
                     self.running = False
                 elif event.type == VIDEORESIZE:
                     self.screen = pygame.display.set_mode((event.w,event.h),HWSURFACE|DOUBLEBUF|RESIZABLE)
+                    self.ph = physicsEngine(self)
+                    self.ph.start()
                     self.background = pygame.Surface(self.screen.get_size()).convert()
                 elif (event.type == pygame.KEYDOWN) and (event.key == pygame.K_ESCAPE):
                     self.running = False
