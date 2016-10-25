@@ -50,9 +50,8 @@ class dvd():
                     self.background = pygame.Surface(self.screen.get_size()).convert()
                 elif (event.type == pygame.KEYDOWN) and (event.key == pygame.K_ESCAPE):
                     self.running = False
-            #objects = self.parent_conn.recv()
-            objects = self.ph.getObjects()
-            #self.parent_conn.send(self.screen.get_size())
+            objects = self.parent_conn.recv()
+            self.parent_conn.send(self.screen.get_size())
             self.render(objects)
             self.clock.tick(self.fps)
             print ("Render FPS:",1.0/(max(time.time()-t1,0.00001)))

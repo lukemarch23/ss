@@ -1,4 +1,4 @@
-import threading
+import multiprocessing
 import pygame
 from random import randint,randrange
 from math import *
@@ -13,7 +13,7 @@ def ins_sort(k,key = lambda x:x):
             j=j-1
     return k
 
-class physicsEngine(threading.Thread):
+class physicsEngine(multiprocessing.Process):
     def __init__(self,dvd):
         super(physicsEngine,self).__init__()
         self.dvd = dvd
@@ -52,8 +52,8 @@ class physicsEngine(threading.Thread):
                         if u.distsq(v)<lw**2:close.append(v)
                     u.close=close
 
-            #self.dvd.child_conn.send(self.getObjects())
-            #self.w,self.h = self.dvd.child_conn.recv()
+            self.dvd.child_conn.send(self.getDrawableObjects())
+            self.w,self.h = self.dvd.child_conn.recv()
 
 
             st = time.time()-st
@@ -61,7 +61,7 @@ class physicsEngine(threading.Thread):
             print ("Physics FPS: "+str(1./max(0.00001,st)))
 
 
-    def getObjects(self):
+    def getDrawableObjects(self):
         return [u.getData() for u in self.ps]
     def renderObjects(self,background):
         for u in self.getObjects():
