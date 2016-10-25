@@ -59,12 +59,14 @@ class dvd():
 		self.background.fill((0, 0, 0))
 		for u in objects:
 			x,y,r,c = u
-			pygame.draw.circle(self.background,(0,0,233),(int(x),int(y)),int(r))
-
-		for u in objects:
-			x,y,r,c = u
 			for v in c:
 				pygame.draw.line(self.background,self.colour,(x,y),v)
+		
+		for u in objects:
+			x,y,r,c = u
+			pygame.draw.circle(self.background,(0,0,233),(int(x),int(y)),int(r))
+
+		
 		
 		self.screen.blit(self.background, (0, 0))
 		pygame.display.flip()
