@@ -6,11 +6,11 @@ import math
 import time
 
 def ins_sort(k,key = lambda x:x):
-    for i in range(1,len(k)):  
-        j = i                   
-        while j > 0 and key(k[j]) < key(k[j-1]): 
-            k[j], k[j-1] = k[j-1], k[j] 
-            j=j-1 
+    for i in range(1,len(k)):
+        j = i
+        while j > 0 and key(k[j]) < key(k[j-1]):
+            k[j], k[j-1] = k[j-1], k[j]
+            j=j-1
     return k
 
 class physicsEngine(multiprocessing.Process):
@@ -37,7 +37,7 @@ class physicsEngine(multiprocessing.Process):
 				for vi in range(ui+1,len(self.us)):
 					v = self.us[vi]
 					if v.x-v.rad>u.x+u.rad:break
-					#if v.x-v.rad 
+					#if v.x-v.rad
 					#narrow range
 					if  u.collide(v):
 						u.bounce(v)
@@ -58,7 +58,7 @@ class physicsEngine(multiprocessing.Process):
 			st = time.time()-st
 			time.sleep(max(0,1./self.dvd.fps-st))
 			print ("Physics FPS: "+str(1./max(0.00001,st)))
-		
+
 
 	def getObjects(self):
 		return [u.getData() for u in self.ps]
@@ -71,7 +71,7 @@ class particle():
 	def __init__(self,dvd,ph):
 		self.dvd=dvd
 		self.ph=ph
-		
+
 		self.rad = 6
 		self.x,self.y = (randint(self.rad,self.ph.w-self.rad),randint(self.rad,self.ph.h-self.rad))
 		speed = randint(10,100)
@@ -108,7 +108,7 @@ class particle():
 		dist = sqrt(dx**2+dy**2)
 		impulse = self.rad+other.rad - dist
 		ang = atan2(dy,dx)
-		
+
 		ax = impulse*cos(ang)
 		ay = impulse*sin(ang)
 
