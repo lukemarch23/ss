@@ -20,27 +20,31 @@ class physicsEngine(multiprocessing.Process):
         self.w,self.h = self.dvd.screen.get_size()
         self.us = [particle(self.dvd,self) for _ in range(self.dvd.particleCount)]
         self.ps = self.us[:]
+        self.running = self.dvd.running
 
     def run(self):
-        while self.dvd.running:
+        while self.running:
             st = time.time()
+
             #move
             for u in self.us:
                 u.move()
             #gravity
-            #self.us.sort(key = lambda x:x.x-x.rad)
+
             #collision detection
             #broad range
+            #self.us.sort(key = lambda x:x.x-x.rad)
             ins_sort(self.us,key = lambda x:x.x-x.rad)
             for ui in range(0,len(self.us)):
                 u = self.us[ui]
                 for vi in range(ui+1,len(self.us)):
                     v = self.us[vi]
                     if v.x-v.rad>u.x+u.rad:break
-                    #if v.x-v.rad
                     #narrow range
                     if  u.collide(v):
                         u.bounce(v)
+
+            #find close neighbours
             if self.dvd.drawLines:
                 lw = self.dvd.drawLineDistance
                 for ui in range(0,len(self.us)):
@@ -52,8 +56,11 @@ class physicsEngine(multiprocessing.Process):
                         if u.distsq(v)<lw**2:close.append(v)
                     u.close=close
 
+            '''for u in self.getDrawableObjects():
+            	self.dvd.child_conn.send(u)
+            self.dvd.child_conn.send("Done")'''
             self.dvd.child_conn.send(self.getDrawableObjects())
-            self.w,self.h = self.dvd.child_conn.recv()
+            (self.w,self.h),self.running = self.dvd.child_conn.recv()
 
 
             st = time.time()-st
@@ -63,6 +70,7 @@ class physicsEngine(multiprocessing.Process):
 
     def getDrawableObjects(self):
         return [u.getData() for u in self.ps]
+
     def renderObjects(self,background):
         for u in self.getObjects():
             u.draw(background)
@@ -109,10 +117,8 @@ class particle():
         dist = sqrt(dx**2+dy**2)
         impulse = self.rad+other.rad - dist
         ang = atan2(dy,dx)
-
         ax = impulse*cos(ang)
         ay = impulse*sin(ang)
-
         self.x-=ax
         self.y-=ay
         chx = self.systemspeed*cos(ang)
@@ -121,12 +127,15 @@ class particle():
         self.dy -= chy
         other.dx += chx
         other.dy += chy
+
     def __str__(self):
         return self.x+","+self.y
+
     def dist(self,o):
         return sqrt((self.x-o.x)**2+(self.y-o.y)**2)
+
     def distsq(self,o):
         return (self.x-o.x)**2+(self.y-o.y)**2
+
     def getData(self):
-        #return self.img,self.textpos
         return self.x,self.y,self.rad,[(u.x,u.y) for u in self.close]
