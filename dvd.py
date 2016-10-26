@@ -8,13 +8,11 @@ from random import randint
 import multiprocessing
 
 def unitValue(x):
-    if x>0:return 1
-    elif x<0:return -1
-    return 0
+	return [[0,-1][x<0],1][x>0]
 
 class dvd():
     def __init__(self):
-        self.fps = 40.0
+        self.fps = 60.0
         self.particleCount = 200
         self.drawLines = True
         self.drawLineDistance = 200
@@ -30,7 +28,6 @@ class dvd():
         self.colour = [0,0,233]
 
         self.parent_conn, self.child_conn = multiprocessing.Pipe()
-
         self.ph = physicsEngine(self)
         self.ph.daemon = True
 
@@ -44,18 +41,12 @@ class dvd():
                     self.running = False
                 elif event.type == VIDEORESIZE:
                     self.screen = pygame.display.set_mode((event.w,event.h),HWSURFACE|DOUBLEBUF|RESIZABLE)
-                    self.ph = physicsEngine(self)
-                    self.ph.start()
                     self.background = pygame.Surface(self.screen.get_size()).convert()
                 elif (event.type == pygame.KEYDOWN) and (event.key == pygame.K_ESCAPE):
                     self.running = False
 
+            #get objects to draw and send stats
             objects = self.parent_conn.recv()
-            '''objects = []
-            while 1:
-            	u = self.parent_conn.recv()
-            	if u == "Done":break
-            	objects.append(u)'''
             self.parent_conn.send((self.screen.get_size(),self.running))
 
             self.render(objects)
@@ -64,18 +55,19 @@ class dvd():
         pygame.quit()
 
     def render(self,objects):
-
+    	#update colours
         if self.colour == self.ncolour:self.ncolour = [randint(0,255),randint(0,255),randint(0,255)]
-        for i in range(0,3):
-            self.colour[i]+=unitValue(self.ncolour[i]-self.colour[i])
+        for i in range(0,3): self.colour[i]+=unitValue(self.ncolour[i]-self.colour[i])
 
         #clear screen
         self.background.fill((0, 0, 0))
+
         #draw connecting lines
         for u in objects:
             x,y,r,c = u
             for v in c:
                 pygame.draw.line(self.background,self.colour,(x,y),v)
+
         #draw objects infront of lines
         for u in objects:
             x,y,r,c = u

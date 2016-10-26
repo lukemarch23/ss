@@ -29,7 +29,6 @@ class physicsEngine(multiprocessing.Process):
             #move
             for u in self.us:
                 u.move()
-            #gravity
 
             #collision detection
             #broad range
@@ -56,9 +55,7 @@ class physicsEngine(multiprocessing.Process):
                         if u.distsq(v)<lw**2:close.append(v)
                     u.close=close
 
-            '''for u in self.getDrawableObjects():
-            	self.dvd.child_conn.send(u)
-            self.dvd.child_conn.send("Done")'''
+            #send objects to draw and get stats back
             self.dvd.child_conn.send(self.getDrawableObjects())
             (width,height),self.running = self.dvd.child_conn.recv()
             #check for resize
@@ -86,19 +83,18 @@ class particle():
         self.dvd=dvd
         self.ph=ph
 
-        self.rad = 6
+        self.rad = randint(5,12)
         self.x,self.y = (randint(self.rad,self.ph.w-self.rad),randint(self.rad,self.ph.h-self.rad))
-        speed = randint(10,100)
+        self.systemspeed = randrange(2,3)
         angle = randint(1,360)*pi/180.
-        self.dx = cos(angle)*speed
-        self.dy = sin(angle)*speed
-        self.systemspeed = 100.
+        self.dx = cos(angle)*self.systemspeed
+        self.dy = sin(angle)*self.systemspeed
         self.close=[]
 
     def move(self):
         w,h = self.ph.w,self.ph.h
-        nx = self.x+self.dx/self.dvd.fps
-        ny = self.y+self.dy/self.dvd.fps
+        nx = self.x+self.dx
+        ny = self.y+self.dy
         if nx+self.rad>w:
             self.dx = -self.dx
             nx = w-self.rad
@@ -126,8 +122,9 @@ class particle():
         ay = impulse*sin(ang)
         self.x-=ax
         self.y-=ay
-        chx = self.systemspeed*cos(ang)
-        chy = self.systemspeed*sin(ang)
+        speed = (self.systemspeed+other.systemspeed)/2.
+        chx = speed*cos(ang)
+        chy = speed*sin(ang)
         self.dx -= chx
         self.dy -= chy
         other.dx += chx
