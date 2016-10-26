@@ -60,7 +60,12 @@ class physicsEngine(multiprocessing.Process):
             	self.dvd.child_conn.send(u)
             self.dvd.child_conn.send("Done")'''
             self.dvd.child_conn.send(self.getDrawableObjects())
-            (self.w,self.h),self.running = self.dvd.child_conn.recv()
+            (width,height),self.running = self.dvd.child_conn.recv()
+            #check for resize
+            if self.w!=width or self.h!=height:
+                self.w,self.h=width,height
+                self.us = [particle(self.dvd,self) for _ in range(self.dvd.particleCount)]
+                self.ps = self.us[:]
 
 
             st = time.time()-st
