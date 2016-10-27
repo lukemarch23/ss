@@ -2,8 +2,8 @@ import pygame
 
 class Quadtree():
     def __init__(self,level,bounds):
-        self.max_levels = 100
-        self.max_objects = 1
+        self.max_levels = 50
+        self.max_objects = 10
         self.level = level
         self.objects = []
         self.bounds = bounds
