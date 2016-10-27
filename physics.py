@@ -38,8 +38,8 @@ class physicsEngine(multiprocessing.Process):
                 self.quadtree.insert(u)
             
             for u in self.us:
-                vs = []
-                self.quadtree.retrieve(vs,u)
+                vs = self.quadtree.retrieveCollisions(u)
+                print (len(vs))
                 for v in vs:
                     if u.i>=v.i:continue
                     if u.collide(v):

@@ -2,8 +2,8 @@ import pygame
 
 class Quadtree():
     def __init__(self,level,bounds):
-        self.max_levels = 10
-        self.max_objects = 10
+        self.max_levels = 100
+        self.max_objects = 1
         self.level = level
         self.objects = []
         self.bounds = bounds
@@ -57,19 +57,20 @@ class Quadtree():
         if len(self.objects)>self.max_objects and self.level<self.max_levels:
             if self.nodes[0]==None:
                 self.split()
-            i=0
-            while i<len(self.objects):
-                index = self.getIndex(self.objects[i])
+            keep = []
+            for i in self.objects:
+                index = self.getIndex(i)
                 if index!=-1:
-                    v = self.objects[i]
-                    del self.objects[i]
-                    self.nodes[index].insert(v)
+                    self.nodes[index].insert(i)
                 else:
-                    i+=1
+                    keep.append(i)
+            self.objects = keep
 
-    def retrieve(self,returnObjects,obj):
+
+    def retrieveCollisions(self,obj):
+        ret = []
         index = self.getIndex(obj)
         if index!=-1 and self.nodes[0]!=None:
-            self.nodes[index].retrieve(returnObjects,obj)
-        returnObjects+=self.objects
-        return returnObjects
+            ret+=self.nodes[index].retrieveCollisions(obj)
+        ret+=self.objects
+        return ret
