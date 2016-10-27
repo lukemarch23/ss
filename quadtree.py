@@ -73,4 +73,9 @@ class Quadtree():
         if index!=-1 and self.nodes[0]!=None:
             ret+=self.nodes[index].retrieveCollisions(obj)
         ret+=self.objects
+        #below if fixed problems for larger objects, why wasn't it in before? Idk. Slows shit down heaps
+        #Todo, doesn't need to search all 4 obviously
+        if index==-1 and self.nodes[0]!=None:
+            for i in range(0,4):
+                ret+=self.nodes[i].retrieveCollisions(obj)
         return ret

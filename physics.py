@@ -39,23 +39,25 @@ class physicsEngine(multiprocessing.Process):
 
             for u in self.us:
                 vs = self.quadtree.retrieveCollisions(u)
-                #print (len(vs))
                 for v in vs:
                     if u.i>=v.i:continue
                     if u.collide(v):
                         u.bounce(v)
             
-            #quadtree neighbours        
-            lw = 300
-            #p = particle(self.dvd,self,-1)
-            for u in self.us:
-                close = []
-                #p.rect = pygame.Rect(u.x-lw,u.y-lw,2*lw,2*lw)
-                vs = self.quadtree.retrieveCollisions(u)
-                for v in vs:
-                    if u.distsq(v)<lw**2:
-                    	close.append(v)
-                u.close=close
+            #quadtree neighbours    
+            p = particle(self.dvd,self,-1)
+            if self.dvd.drawLines:    
+                lw = self.dvd.drawLineDistance
+                for u in self.us:
+                    close = []
+                    p.rect = pygame.Rect(u.x-lw,u.y-lw,2*lw,2*lw)
+                    vs = self.quadtree.retrieveCollisions(p)
+                    for v in vs:
+                        if u.i>=v.i:continue
+                        if u.distsq(v)<lw**2:
+                            close.append(v)
+                    #print (u.i,len(close))
+                    u.close=close
 
             ''' 
             #sweep and prune
@@ -109,7 +111,7 @@ class physicsEngine(multiprocessing.Process):
         return [u.getData() for u in self.ps]
 
     def renderObjects(self,background):
-        for u in self.getObjects():
+        for u in self.getDrawableObjects():
             u.draw(background)
 
 
