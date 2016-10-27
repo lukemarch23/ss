@@ -16,6 +16,7 @@ class dvd():
         self.particleCount = 200
         self.drawLines = True
         self.drawLineDistance = 200
+        self.collisionsEnabled = True
         self.running = True
 
         pygame.init()
@@ -45,7 +46,7 @@ class dvd():
                 elif (event.type == pygame.KEYDOWN) and (event.key == pygame.K_ESCAPE):
                     self.running = False
 
-            #get objects to draw and send stats
+            #get objects to draw and send settings
             objects = self.parent_conn.recv()
             self.parent_conn.send((self.screen.get_size(),self.running))
 
