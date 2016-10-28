@@ -2,7 +2,7 @@ import pygame
 
 class Quadtree():
     def __init__(self,level,bounds):
-        self.max_levels = 50
+        self.max_levels = 10
         self.max_objects = 10
         self.level = level
         self.objects = []
@@ -28,22 +28,10 @@ class Quadtree():
 
     def getIndex(self,obj):
         index = -1
-        verticalMidpoint = self.bounds.x+self.bounds.w/2
-        horizontalMidpoint = self.bounds.y+self.bounds.h/2
-
-        topQuadrant = obj.rect.y<horizontalMidpoint and obj.rect.y+obj.rect.h<horizontalMidpoint
-        bottomQuadrant = obj.rect.y>horizontalMidpoint
-
-        if obj.rect.x<verticalMidpoint and obj.rect.x+obj.rect.w<verticalMidpoint:
-            if topQuadrant:
-                index = 1
-            elif bottomQuadrant:
-                index = 2
-        elif obj.rect.x>verticalMidpoint:
-            if topQuadrant:
-                index = 0
-            elif bottomQuadrant:
-                index = 3
+        if self.nodes[0]!=None:
+            for i in range(0,4):
+                if self.nodes[i].bounds.contains(obj.rect):
+                    index = i
         return index
 
     def insert(self,obj):
@@ -70,12 +58,13 @@ class Quadtree():
     def retrieveCollisions(self,obj):
         ret = []
         index = self.getIndex(obj)
-        if index!=-1 and self.nodes[0]!=None:
+        #if obj fits in sub square then recurse
+        if index!=-1 :
             ret+=self.nodes[index].retrieveCollisions(obj)
-        ret+=self.objects
-        #below if fixed problems for larger objects, why wasn't it in before? Idk. Slows shit down heaps
-        #Todo, doesn't need to search all 4 obviously
+        ret+=[u for u in self.objects if u.i>obj.i ]
+        #if obj is larger than any, recurse all that it goes into
         if index==-1 and self.nodes[0]!=None:
             for i in range(0,4):
-                ret+=self.nodes[i].retrieveCollisions(obj)
+                if obj.rect.colliderect(self.nodes[i].bounds):
+                    ret+=self.nodes[i].retrieveCollisions(obj)
         return ret

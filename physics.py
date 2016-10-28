@@ -31,64 +31,31 @@ class physicsEngine(multiprocessing.Process):
             #move
             for u in self.us:
                 u.move()
-            
+            #create quadtree
             self.quadtree.clear()
             for u in self.us:
                 u.rect = pygame.Rect(u.x-u.rad,u.y-u.rad,u.rad*2,u.rad*2)
                 self.quadtree.insert(u)
-
+            #check for collisions in quadtree broadrange
             for u in self.us:
                 vs = self.quadtree.retrieveCollisions(u)
                 for v in vs:
-                    if u.i>=v.i:continue
+                    #narrow range collision check
                     if u.collide(v):
                         u.bounce(v)
             
             #quadtree neighbours    
-            p = particle(self.dvd,self,-1)
             if self.dvd.drawLines:    
+                p = particle(self.dvd,self,-1)
                 lw = self.dvd.drawLineDistance
                 for u in self.us:
                     close = []
                     p.rect = pygame.Rect(u.x-lw,u.y-lw,2*lw,2*lw)
                     vs = self.quadtree.retrieveCollisions(p)
                     for v in vs:
-                        if u.i>=v.i:continue
                         if u.distsq(v)<lw**2:
                             close.append(v)
-                    #print (u.i,len(close))
-                    u.close=close
-
-            ''' 
-            #sweep and prune
-            ins_sort(self.us,key = lambda x:x.x-x.rad)
-
-            #collision detection
-            #broad range
-            #self.us.sort(key = lambda x:x.x-x.rad)
-            if self.dvd.collisionsEnabled:
-                for ui in range(0,len(self.us)):
-                    u = self.us[ui]
-                    for vi in range(ui+1,len(self.us)):
-                        v = self.us[vi]
-                        if v.x-v.rad>u.x+u.rad:break
-                        #narrow range
-                        if  u.collide(v):
-                            u.bounce(v)
-            
-            #find close neighbours
-            if self.dvd.drawLines:
-                lw = self.dvd.drawLineDistance
-                for ui in range(0,len(self.us)):
-                    u = self.us[ui]
-                    close = []
-                    for vi in range(ui+1,len(self.us)):
-                        v = self.us[vi]
-                        if v.x-u.x>lw:break
-                        if u.distsq(v)<lw**2:close.append(v)
-                    u.close=close
-            '''
-            
+                    u.close=close            
 
             #send objects to draw and get settings back
             self.dvd.child_conn.send(self.getDrawableObjects())
