@@ -2,7 +2,7 @@ import pygame
 
 class Quadtree():
     def __init__(self,level,bounds):
-        self.max_levels = 10
+        self.max_levels = 100
         self.max_objects = 10
         self.level = level
         self.objects = []
@@ -31,7 +31,7 @@ class Quadtree():
         if self.nodes[0]!=None:
             for i in range(0,4):
                 if self.nodes[i].bounds.contains(obj.rect):
-                    index = i
+                    return i
         return index
 
     def insert(self,obj):
