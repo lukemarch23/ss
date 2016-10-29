@@ -6,14 +6,6 @@ import math
 import time
 from quadtree import Quadtree
 
-def ins_sort(k,key = lambda x:x):
-    for i in range(1,len(k)):
-        j = i
-        while j > 0 and key(k[j]) < key(k[j-1]):
-            k[j], k[j-1] = k[j-1], k[j]
-            j=j-1
-    return k
-
 class physicsEngine(multiprocessing.Process):
     def __init__(self,dvd):
         super(physicsEngine,self).__init__()

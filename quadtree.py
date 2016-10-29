@@ -2,7 +2,7 @@ import pygame
 
 class Quadtree():
     def __init__(self,level,bounds):
-        self.max_levels = 100
+        self.max_levels = 10
         self.max_objects = 10
         self.level = level
         self.objects = []
@@ -27,12 +27,11 @@ class Quadtree():
         self.nodes[3] = Quadtree(self.level+1,pygame.Rect(x+subWidth,   y+subHeight,subWidth,subHeight))
 
     def getIndex(self,obj):
-        index = -1
         if self.nodes[0]!=None:
             for i in range(0,4):
                 if self.nodes[i].bounds.contains(obj.rect):
                     return i
-        return index
+        return -1
 
     def insert(self,obj):
         if self.nodes[0]!=None:
@@ -61,6 +60,7 @@ class Quadtree():
         #if obj fits in sub square then recurse
         if index!=-1 :
             ret+=self.nodes[index].retrieveCollisions(obj)
+            return ret
         ret+=[u for u in self.objects if u.i>obj.i ]
         #if obj is larger than any, recurse all that it goes into
         if index==-1 and self.nodes[0]!=None:
