@@ -13,7 +13,10 @@ class physicsEngine(multiprocessing.Process):
         self.w,self.h = self.dvd.screen.get_size()
         self.us = [particle(self.dvd,self,i) for i in range(self.dvd.particleCount)]
         self.ps = self.us[:]
-        self.quadtree = Quadtree(0,pygame.Rect(0,0,self.w,self.h))
+        self.quadtree = Quadtree(0,pygame.Rect(0,0,self.w,self.h),None)
+        for u in self.us:
+            u.rect = pygame.Rect(u.x-u.rad,u.y-u.rad,u.rad*2,u.rad*2)
+            self.quadtree.insert(u)
         self.running = self.dvd.running
 
     def run(self):
@@ -23,11 +26,9 @@ class physicsEngine(multiprocessing.Process):
             #move
             for u in self.us:
                 u.move()
-            #create quadtree
-            self.quadtree.clear()
-            for u in self.us:
-                u.rect = pygame.Rect(u.x-u.rad,u.y-u.rad,u.rad*2,u.rad*2)
-                self.quadtree.insert(u)
+            #update quadtree
+            self.quadtree.update()
+            
             #check for collisions in quadtree broadrange
             for u in self.us:
                 vs = self.quadtree.retrieveCollisions(u)
@@ -55,9 +56,13 @@ class physicsEngine(multiprocessing.Process):
             #check for resize
             if self.w!=width or self.h!=height:
                 self.w,self.h=width,height
-                self.quadtree = Quadtree(0,pygame.Rect(0,0,self.w,self.h))
                 self.us = [particle(self.dvd,self,i) for i in range(self.dvd.particleCount)]
                 self.ps = self.us[:]
+                self.quadtree = Quadtree(0,pygame.Rect(0,0,self.w,self.h),None)
+                for u in self.us:
+                    u.rect = pygame.Rect(u.x-u.rad,u.y-u.rad,u.rad*2,u.rad*2)
+                    self.quadtree.insert(u)
+                
 
 
             st = time.time()-st
@@ -67,7 +72,7 @@ class physicsEngine(multiprocessing.Process):
 
 
     def getDrawableObjects(self):
-        return [u.getData() for u in self.ps]
+        return [u.getData() for u in self.us]
 
     def renderObjects(self,background):
         for u in self.getDrawableObjects():
@@ -79,7 +84,7 @@ class particle():
         self.dvd=dvd
         self.ph=ph
 
-        self.rad = randint(5,12)
+        self.rad = 8.
         self.x,self.y = (randint(self.rad,self.ph.w-self.rad),randint(self.rad,self.ph.h-self.rad))
         self.i=i
         self.systemspeed = randrange(2,3)

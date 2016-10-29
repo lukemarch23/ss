@@ -1,13 +1,14 @@
 import pygame
 
 class Quadtree():
-    def __init__(self,level,bounds):
+    def __init__(self,level,bounds,parent):
         self.max_levels = 10
         self.max_objects = 10
         self.level = level
         self.objects = []
         self.bounds = bounds
         self.nodes = [None]*4
+        self.parent = parent
 
     def clear(self):
         self.objects = []
@@ -21,10 +22,10 @@ class Quadtree():
         subHeight = int(self.bounds.h/2)
         x = int(self.bounds.x)
         y = int(self.bounds.y)
-        self.nodes[0] = Quadtree(self.level+1,pygame.Rect(x+subWidth,   y,          subWidth,subHeight))
-        self.nodes[1] = Quadtree(self.level+1,pygame.Rect(x,            y,          subWidth,subHeight))
-        self.nodes[2] = Quadtree(self.level+1,pygame.Rect(x,            y+subHeight,subWidth,subHeight))
-        self.nodes[3] = Quadtree(self.level+1,pygame.Rect(x+subWidth,   y+subHeight,subWidth,subHeight))
+        self.nodes[0] = Quadtree(self.level+1,pygame.Rect(x+subWidth,   y,          subWidth,subHeight),self)
+        self.nodes[1] = Quadtree(self.level+1,pygame.Rect(x,            y,          subWidth,subHeight),self)
+        self.nodes[2] = Quadtree(self.level+1,pygame.Rect(x,            y+subHeight,subWidth,subHeight),self)
+        self.nodes[3] = Quadtree(self.level+1,pygame.Rect(x+subWidth,   y+subHeight,subWidth,subHeight),self)
 
     def getIndex(self,obj):
         if self.nodes[0]!=None:
@@ -52,6 +53,22 @@ class Quadtree():
                 else:
                     keep.append(i)
             self.objects = keep
+
+    def update(self):
+        keep = []
+        for u in self.objects:
+            u.rect = pygame.Rect(u.x-u.rad,u.y-u.rad,u.rad*2,u.rad*2)
+            index = self.getIndex(u)
+            if index!=-1:
+                self.nodes[index].insert(u)
+            elif self.parent!=None and not self.bounds.contains(u.rect):
+                self.parent.insert(u)
+            else:
+                keep.append(u)
+        self.objects = keep
+        if self.nodes[0]!=None:
+            for i in range(4):
+                self.nodes[i].update()
 
 
     def retrieveCollisions(self,obj):
