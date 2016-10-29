@@ -11,12 +11,7 @@ class physicsEngine(multiprocessing.Process):
         super(physicsEngine,self).__init__()
         self.dvd = dvd
         self.w,self.h = self.dvd.screen.get_size()
-        self.us = [particle(self.dvd,self,i) for i in range(self.dvd.particleCount)]
-        self.ps = self.us[:]
-        self.quadtree = Quadtree(0,pygame.Rect(0,0,self.w,self.h),None)
-        for u in self.us:
-            u.rect = pygame.Rect(u.x-u.rad,u.y-u.rad,u.rad*2,u.rad*2)
-            self.quadtree.insert(u)
+        self.createQuadtreeParticleSystem()
         self.running = self.dvd.running
 
     def run(self):
@@ -56,14 +51,7 @@ class physicsEngine(multiprocessing.Process):
             #check for resize
             if self.w!=width or self.h!=height:
                 self.w,self.h=width,height
-                self.us = [particle(self.dvd,self,i) for i in range(self.dvd.particleCount)]
-                self.ps = self.us[:]
-                self.quadtree = Quadtree(0,pygame.Rect(0,0,self.w,self.h),None)
-                for u in self.us:
-                    u.rect = pygame.Rect(u.x-u.rad,u.y-u.rad,u.rad*2,u.rad*2)
-                    self.quadtree.insert(u)
-                
-
+                self.createQuadtreeParticleSystem()
 
             st = time.time()-st
             #tick rate is governed by Pipe passings
@@ -77,6 +65,14 @@ class physicsEngine(multiprocessing.Process):
     def renderObjects(self,background):
         for u in self.getDrawableObjects():
             u.draw(background)
+
+    def createQuadtreeParticleSystem(self):
+        self.us = [particle(self.dvd,self,i) for i in range(self.dvd.particleCount)]
+        self.ps = self.us[:]
+        self.quadtree = Quadtree(0,pygame.Rect(0,0,self.w,self.h),None)
+        for u in self.us:
+            u.rect = pygame.Rect(u.x-u.rad,u.y-u.rad,u.rad*2,u.rad*2)
+            self.quadtree.insert(u)
 
 
 class particle():
