@@ -13,8 +13,8 @@ def unitValue(x):
 class dvd():
     def __init__(self):
         self.fps = 60.0
-        self.particleCount = 100
-        self.drawLines = True
+        self.particleCount = 50
+        self.drawLines = False
         self.drawLineDistance = 200
         self.collisionsEnabled = True
         self.running = True

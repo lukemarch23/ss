@@ -1,6 +1,6 @@
 import multiprocessing
 import pygame
-from random import randint,randrange
+import random
 from math import *
 import math
 import time
@@ -10,6 +10,7 @@ class physicsEngine(multiprocessing.Process):
     def __init__(self,dvd):
         super(physicsEngine,self).__init__()
         self.dvd = dvd
+        self.density = 10.
         self.w,self.h = self.dvd.screen.get_size()
         self.createQuadtreeParticleSystem()
         self.running = self.dvd.running
@@ -21,6 +22,9 @@ class physicsEngine(multiprocessing.Process):
             #move
             for u in self.us:
                 u.move()
+
+            
+
             #update quadtree
             self.quadtree.update()
             
@@ -29,8 +33,13 @@ class physicsEngine(multiprocessing.Process):
                 vs = self.quadtree.retrieveCollisions(u)
                 for v in vs:
                     #narrow range collision check
-                    if u.collide(v):
-                        u.bounce(v)
+                    collide(u,v)
+                    #if u.collide(v):
+                    #    u.bounce(v)
+
+            for i in range(0,len(self.us)):
+                for v in range(i+1,len(self.us)):
+                	self.us[i].attract(self.us[v])
             
             #quadtree neighbours    
             if self.dvd.drawLines:    
@@ -43,7 +52,9 @@ class physicsEngine(multiprocessing.Process):
                     for v in vs:
                         if u.distsq(v)<lw**2:
                             close.append(v)
-                    u.close=close            
+                    u.close=close  
+
+            
 
             #send objects to draw and get settings back
             self.dvd.child_conn.send(self.getDrawableObjects())
@@ -60,11 +71,7 @@ class physicsEngine(multiprocessing.Process):
 
 
     def getDrawableObjects(self):
-        return [u.getData() for u in self.us]
-
-    def renderObjects(self,background):
-        for u in self.getDrawableObjects():
-            u.draw(background)
+        return [u.getData() for u in self.ps]
 
     def createQuadtreeParticleSystem(self):
         self.us = [particle(self.dvd,self,i) for i in range(self.dvd.particleCount)]
@@ -80,53 +87,55 @@ class particle():
         self.dvd=dvd
         self.ph=ph
 
-        self.rad = 8.
-        self.x,self.y = (randint(self.rad,self.ph.w-self.rad),randint(self.rad,self.ph.h-self.rad))
+        self.rad = random.randint(3, 8)
+        self.x,self.y = (random.randint(self.rad,self.ph.w-self.rad),random.randint(self.rad,self.ph.h-self.rad))
         self.i=i
-        self.systemspeed = randrange(2,3)
-        angle = randint(1,360)*pi/180.
-        self.dx = cos(angle)*self.systemspeed
-        self.dy = sin(angle)*self.systemspeed
+        self.speed = random.random()*10
+        self.angle = random.uniform(0, math.pi*2)
+        self.elasticity=1.
+        self.mass = math.pi*self.rad**2*self.ph.density
         self.close=[]
 
     def move(self):
         w,h = self.ph.w,self.ph.h
-        nx = self.x+self.dx
-        ny = self.y+self.dy
+        nx = self.x+sin(self.angle)*self.speed
+        ny = self.y-cos(self.angle)*self.speed
         if nx+self.rad>w:
-            self.dx = -self.dx
+            self.angle = -self.angle
             nx = w-self.rad
+            self.speed*=self.elasticity
         elif nx-self.rad<0:
-            self.dx = -self.dx
+            self.angle = -self.angle
             nx = self.rad
+            self.speed*=self.elasticity
         elif ny+self.rad>h:
-            self.dy = -self.dy
+            self.angle = math.pi-self.angle
             ny = h-self.rad
+            self.speed*=self.elasticity
         elif ny-self.rad<0:
-            self.dy = -self.dy
+            self.angle = math.pi-self.angle
             ny = self.rad
+            self.speed*=self.elasticity
         self.x,self.y = nx,ny
 
-    def collide(self,other):
-        return (self.x-other.x)**2+(self.y-other.y)**2<(self.rad+other.rad)**2
+    def accelerate(self, vector):
+        """ Change angle and speed by a given vector """
+        (self.angle, self.speed) = addVectors(self.angle, self.speed, vector[0],vector[1])
+        
+    def attract(self, other):
+        """" Change velocity based on gravatational attraction between two particle"""
+        
+        dx = (self.x - other.x)
+        dy = (self.y - other.y)
+        dist  = math.hypot(dx, dy)
+        
+        if dist < self.rad + self.rad:
+            return True
 
-    def bounce(self,other):
-        dx = other.x-self.x
-        dy = other.y-self.y
-        dist = sqrt(dx**2+dy**2)
-        impulse = self.rad+other.rad - dist
-        ang = atan2(dy,dx)
-        ax = impulse*cos(ang)
-        ay = impulse*sin(ang)
-        self.x-=ax
-        self.y-=ay
-        speed = (self.systemspeed+other.systemspeed)/2.
-        chx = speed*cos(ang)
-        chy = speed*sin(ang)
-        self.dx -= chx
-        self.dy -= chy
-        other.dx += chx
-        other.dy += chy
+        theta = math.atan2(dy, dx)
+        force = 0.2 * self.mass * other.mass / dist**2
+        self.accelerate((theta- 0.5 * math.pi, force/self.mass))
+        other.accelerate((theta+ 0.5 * math.pi, force/other.mass))
 
     def __str__(self):
         return str(self.x)+","+str(self.y)+","+str(self.dx)+","+str(self.dy)
@@ -139,3 +148,38 @@ class particle():
 
     def getData(self):
         return self.x,self.y,self.rad,[(u.x,u.y) for u in self.close]
+
+def addVectors(angle1, length1, angle2, length2):
+    
+    x  = math.sin(angle1) * length1 + math.sin(angle2) * length2
+    y  = math.cos(angle1) * length1 + math.cos(angle2) * length2
+    
+    angle  = 0.5 * math.pi - math.atan2(y, x)
+    length = math.hypot(x, y)
+
+    return (angle, length)
+
+def collide(p1, p2):
+    """ Tests whether two particles overlap
+        If they do, make them bounce, i.e. update their angle, speed and position """
+    
+    dx = p1.x - p2.x
+    dy = p1.y - p2.y
+    
+    dist = math.hypot(dx, dy)
+    if dist <= p1.rad + p2.rad:
+        angle = math.atan2(dy, dx) + 0.5 * math.pi
+        total_mass = p1.mass + p2.mass
+
+        (p1.angle, p1.speed) = addVectors(p1.angle, p1.speed*(p1.mass-p2.mass)/total_mass, angle,         2*p2.speed*p2.mass/total_mass)
+        (p2.angle, p2.speed) = addVectors(p2.angle, p2.speed*(p2.mass-p1.mass)/total_mass, angle+math.pi, 2*p1.speed*p1.mass/total_mass)
+        elasticity = p1.elasticity * p2.elasticity
+        p1.speed *= elasticity
+        p2.speed *= elasticity
+
+        overlap = 0.5*(p1.rad + p2.rad - dist+2)
+        p1.x += math.sin(angle)*overlap
+        p1.y -= math.cos(angle)*overlap
+        p2.x -= math.sin(angle)*overlap
+        p2.y += math.cos(angle)*overlap
+
