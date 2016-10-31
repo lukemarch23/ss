@@ -10,7 +10,9 @@ class physicsEngine(multiprocessing.Process):
     def __init__(self,dvd):
         super(physicsEngine,self).__init__()
         self.dvd = dvd
-        self.density = 10.
+        self.density = 1000.
+        self.mass_of_air = .2
+        self.attraction_force = 0.2
         self.w,self.h = self.dvd.screen.get_size()
         self.createQuadtreeParticleSystem()
         self.running = self.dvd.running
@@ -22,8 +24,6 @@ class physicsEngine(multiprocessing.Process):
             #move
             for u in self.us:
                 u.move()
-
-            
 
             #update quadtree
             self.quadtree.update()
@@ -87,13 +87,16 @@ class particle():
         self.dvd=dvd
         self.ph=ph
 
-        self.rad = random.randint(3, 8)
+        self.rad = random.randint(5, 8)
+        self.size = self.rad
         self.x,self.y = (random.randint(self.rad,self.ph.w-self.rad),random.randint(self.rad,self.ph.h-self.rad))
         self.i=i
         self.speed = random.random()*10
         self.angle = random.uniform(0, math.pi*2)
-        self.elasticity=1.
+        self.elasticity=.9
         self.mass = math.pi*self.rad**2*self.ph.density
+        self.mass = self.ph.density
+        self.drag = (self.mass/(self.mass + self.ph.mass_of_air)) ** self.size
         self.close=[]
 
     def move(self):
@@ -127,13 +130,16 @@ class particle():
         dy = (self.y - other.y)
         dist  = math.hypot(dx, dy)
         
-        if dist < self.rad + self.rad:
+        if dist < self.size + self.size:
             return True
 
         theta = math.atan2(dy, dx)
-        force = 0.2 * self.mass * other.mass / dist**2
+        force = self.ph.attraction_force * self.mass * other.mass / dist**2
         self.accelerate((theta- 0.5 * math.pi, force/self.mass))
         other.accelerate((theta+ 0.5 * math.pi, force/other.mass))
+
+    def experienceDrag(self):
+        self.speed *= self.drag
 
     def __str__(self):
         return str(self.x)+","+str(self.y)+","+str(self.dx)+","+str(self.dy)
@@ -165,7 +171,7 @@ def collide(p1, p2):
     dy = p1.y - p2.y
     
     dist = math.hypot(dx, dy)
-    if dist <= p1.rad + p2.rad:
+    if dist <= p1.size + p2.size:
         angle = math.atan2(dy, dx) + 0.5 * math.pi
         total_mass = p1.mass + p2.mass
 
@@ -174,8 +180,10 @@ def collide(p1, p2):
         elasticity = p1.elasticity * p2.elasticity
         p1.speed *= elasticity
         p2.speed *= elasticity
+        #p1.speed = max(p1.speed,1)
+        #p2.speed = max(p2.speed,1)
 
-        overlap = 0.5*(p1.rad + p2.rad - dist+2)
+        overlap = 0.5*(p1.size + p2.size - dist+2)
         p1.x += math.sin(angle)*overlap
         p1.y -= math.cos(angle)*overlap
         p2.x -= math.sin(angle)*overlap
