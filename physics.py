@@ -119,11 +119,9 @@ class particle():
         self.x,self.y = nx,ny
 
     def accelerate(self, vector):
-        """ Change angle and speed by a given vector """
         (self.angle, self.speed) = addVectors(self.angle, self.speed, vector[0],vector[1])
         
     def attract(self, other):
-        """" Change velocity based on gravatational attraction between two particle"""
         
         dx = (self.x - other.x)
         dy = (self.y - other.y)
